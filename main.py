@@ -2,13 +2,19 @@ import pygame as pg
 
 clock = pg.time.Clock()
 
+class objects:
+    def __init__(self, caption, coord_x, coord_y):
+        self.caption = pg.image.load(caption) 
+        self.coord_x = weight + coord_x
+        self.coord_y = coord_y
+
 pg.init()
 
 #display 
 weight = 741                                                                                   # display weight
 haight = 545                                                                                   # display haight
 screen = pg.display.set_mode((weight, haight))                                                 # set display size
-icon = pg.image.load('images/1.png')                                                        # logo
+icon = pg.image.load('images/1.png')                                                           # logo
 myfront = pg.font.Font('fonts/Roboto/Roboto-Black.ttf', 60)                                    # font
 
 pg.display.set_caption("Weekness. Kupcov Edition")                                             # set caption
@@ -16,7 +22,7 @@ pg.display.set_icon(icon)                                                       
                               
 h_c = 9    
 t_c = 0                          
-text_surface = myfront.render(f'health: {h_c}', True, 'black')                              # use font
+text_surface = myfront.render(f'health: {h_c}', True, 'black')                                # use font
 
 #objects
 
@@ -28,14 +34,11 @@ player_x = 100
 player_y = 463
 
 #Enemy
-enemy = pg.image.load('images/enemy_2.png') 
-enemy_x = weight + 2
+enemy = objects('images/enemy_1.png', 2, 470)
+enemy_2 = objects('images/enemy_2.png', 10, 480)
 
 #Task
-task = pg.image.load('images/done.png')
-task_x = weight + 10
-
-
+task = objects('images/done.png', 10, 370)
 
 #background
 bg = pg.image.load('images/bg.png')                                                            # background 
@@ -66,9 +69,10 @@ while running:
 #add player
     screen.blit(player, (player_x, player_y))
 #add enemy
-    screen.blit(enemy, (enemy_x, 440))
+    screen.blit(enemy.caption, (enemy.coord_x, enemy.coord_y))
+    screen.blit(enemy_2.caption, (enemy_2.coord_x, enemy_2.coord_y))
 #add task
-    screen.blit(task, (task_x, 400))
+    screen.blit(task.caption, (task.coord_x, task.coord_y))
     
 #button on
     for event in pg.event.get():
@@ -100,17 +104,25 @@ while running:
     bg_x -= 1
     if bg_x == -741:
         bg_x = 0
-    enemy_x -=5
-    if enemy_x <= -741:
-        enemy_x = weight + 2
-    task_x -=5
-    if task_x <= -741:
-        task_x = weight + 10
+    enemy.coord_x -=3
+    if enemy.coord_x <= -741:
+        enemy.coord_x = weight + 2
+    
+    enemy_2.coord_x -=2
+    if enemy_2.coord_x <= -741:
+        enemy_2.coord_x = weight + 3
+
+    task.coord_x -=5
+    if task.coord_x <= -741:
+        task.coord_x = weight + 10
     pg.display.update()
-    if (player_x-2 <= enemy_x and player_x+2 >= enemy_x) and player_y >= 390:
+    if (player_x-2 <= enemy.coord_x and player_x+2 >= enemy.coord_x) and player_y >= 410:
         print(player_y)
         h_c -= 1
-    if (player_x-2 <= task_x and player_x+2 >= task_x) and player_y <= 410:
+    if (player_x-2 <= enemy_2.coord_x and player_x+2 >= enemy_2.coord_x) and player_y >= 410:
+        print(player_y)
+        h_c -= 2
+    if ((player_x-5 <= task.coord_x and player_x+5 >= task.coord_x) or player_x == task.coord_x) and player_y <= 400:
         print(player_y)
         t_c += 1
     
