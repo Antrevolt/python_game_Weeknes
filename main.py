@@ -7,6 +7,29 @@ class objects:
         self.caption = pg.image.load(caption) 
         self.coord_x = weight + coord_x
         self.coord_y = coord_y
+#Функция для сдвига объекта
+def move_2(x,offset, l_side, start_x = 0):
+    x -= offset
+    if x <= - l_side:
+        x = start_x
+    return x
+#Функция для Очка
+def point(type,counter, player_x, player_y, enemy_x,point, border = 2):
+    target_y = 0
+    if type == 'task':
+        target_y = 400
+        if (enemy_x - border) <= player_x <= (enemy_x + border) and player_y <= target_y:
+            return counter + point
+        else:
+            return counter
+    elif type == 'enemy':
+        target_y = 410
+        if (enemy_x - border) <= player_x <= (enemy_x + border) and player_y >= target_y:
+            return counter - point
+        else:
+            return counter
+
+
 
 pg.init()
 
@@ -78,6 +101,8 @@ while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             pg.quit()
+    if h_c <= 0:
+        pass
 
 #key description
     keys = pg.key.get_pressed()
@@ -101,30 +126,20 @@ while running:
             is_jump = False
             jump_size = 10
 
-    bg_x -= 1
-    if bg_x == -741:
-        bg_x = 0
-    enemy.coord_x -=3
-    if enemy.coord_x <= -741:
-        enemy.coord_x = weight + 2
-    
-    enemy_2.coord_x -=2
-    if enemy_2.coord_x <= -741:
-        enemy_2.coord_x = weight + 3
+    #Повторяем фон
+    bg_x = move_2(bg_x, 1, 741)    
+    #двигаем первого врага
+    enemy.coord_x = move_2(enemy.coord_x, 3, 741, weight + 2)
+    #двигаем второго врага
+    enemy_2.coord_x = move_2(enemy_2.coord_x, 2, 741, weight + 3)
+    #двигаем таску 
+    task.coord_x = move_2(task.coord_x, 5, 741, weight + 10)
 
-    task.coord_x -=5
-    if task.coord_x <= -741:
-        task.coord_x = weight + 10
     pg.display.update()
-    if (player_x-2 <= enemy.coord_x and player_x+2 >= enemy.coord_x) and player_y >= 410:
-        print(player_y)
-        h_c -= 1
-    if (player_x-2 <= enemy_2.coord_x and player_x+2 >= enemy_2.coord_x) and player_y >= 410:
-        print(player_y)
-        h_c -= 2
-    if ((player_x-5 <= task.coord_x and player_x+5 >= task.coord_x) or player_x == task.coord_x) and player_y <= 400:
-        print(player_y)
-        t_c += 1
-    
+    #играемся с жизнями
+    h_c = point('enemy', h_c,player_x,player_y,enemy.coord_x,2)
+    h_c = point('enemy', h_c,player_x,player_y,enemy_2.coord_x,2)
+    t_c = point('task', t_c,player_x,player_y,task.coord_x,1)
+
     clock.tick(60)
                 
