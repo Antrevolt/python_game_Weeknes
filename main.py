@@ -4,7 +4,7 @@ clock = pg.time.Clock()
 
 class objects:
     def __init__(self, caption, coord_x, coord_y):
-        self.caption = pg.image.load(caption) 
+        self.caption = pg.image.load(caption).convert_alpha()
         self.coord_x = weight + coord_x
         self.coord_y = coord_y
 #Функция для сдвига объекта
@@ -28,6 +28,18 @@ def point(type,counter, player_x, player_y, enemy_x,point, border = 2):
             return counter - point
         else:
             return counter
+def count_fps(start,finish,fps):
+    l = []
+    i = 0
+    while int(i/fps) <= finish:
+        start = int(i/fps)
+        print(start)
+        l.append(start)
+        i +=1
+    print(*l)
+    return l
+    
+    
 
 
 
@@ -37,7 +49,7 @@ pg.init()
 weight = 741                                                                                   # display weight
 haight = 545                                                                                   # display haight
 screen = pg.display.set_mode((weight, haight))                                                 # set display size
-icon = pg.image.load('images/1.png')                                                           # logo
+icon = pg.image.load('images/1.png') .convert_alpha()                                                         # logo
 myfront = pg.font.Font('fonts/Roboto/Roboto-Black.ttf', 60)                                    # font
 
 pg.display.set_caption("Weekness. Kupcov Edition")                                             # set caption
@@ -50,11 +62,23 @@ text_surface = myfront.render(f'health: {h_c}', True, 'black')                  
 #objects
 
 #Player
-player = pg.image.load('images/frog.png')                                                      # Playr_icon
+player = pg.image.load('images/main_run/run_0.png').convert_alpha()                                                  # Playr_icon
 
-player_speed = 5
+player_speed = 2
 player_x = 100
-player_y = 463
+player_y = 445
+walk_right = [
+    pg.image.load('images/main_run/run_0.png').convert_alpha(),
+    pg.image.load('images/main_run/run_1.png').convert_alpha(),
+    pg.image.load('images/main_run/run_2.png').convert_alpha(),
+    pg.image.load('images/main_run/run_3.png').convert_alpha(),
+    pg.image.load('images/main_run/run_4.png').convert_alpha(),
+    pg.image.load('images/main_run/run_5.png').convert_alpha(),
+    pg.image.load('images/main_run/run_6.png').convert_alpha(),
+    pg.image.load('images/main_run/run_7.png').convert_alpha()
+]
+tt = count_fps(0, len(walk_right)-1,5)
+player_aim_count = tt[0]
 
 #Enemy
 enemy = objects('images/enemy_1.png', 2, 470)
@@ -64,45 +88,62 @@ enemy_2 = objects('images/enemy_2.png', 10, 480)
 task = objects('images/done.png', 10, 370)
 
 #background
-bg = pg.image.load('images/bg.png')                                                            # background 
+bg = pg.image.load('images/bg.png').convert()                                                            # background 
 bg_x = 0                                                                                       # background xy_start
+
+bg_sound = pg.mixer.Sound('sound/start_song.ogg')
 
 #action_el
 
 #jump
 is_jump = False
 
-jump_size = 10
+jump_size = 7
 
 #running
 running = True
 
 #main_game
-
+i = 0
+bg_sound.play()
 while running:
 
 #move background
+    
+    screen.blit(bg, (bg_x, 0))
+    #screen.blit(bg, (bg_x + weight, 0))
     text_surface = myfront.render(f'health: {h_c}', True, 'black')
     text_task = myfront.render(f'task: {t_c}', True, 'black')
-    screen.blit(bg, (bg_x, 0))
-    screen.blit(bg, (bg_x + weight, 0))
+
+    player_rect = walk_right[0].get_rect(topleft=(player_x, player_y))
+    enemy_rect = enemy.caption.get_rect(topleft=(enemy.coord_x,enemy.coord_y))
+    enemy_2_rect = enemy_2.caption.get_rect(topleft=(enemy_2.coord_x,enemy_2.coord_y))
+    task_rect = task.caption.get_rect(topleft=(task.coord_x,task.coord_y))
 #add text
     screen.blit(text_surface,(0, 0))
     screen.blit(text_task,(0, 50))
 #add player
-    screen.blit(player, (player_x, player_y))
+    if i < len(tt):
+        screen.blit(walk_right[tt[i]], (player_x, player_y))
+        print(tt[i])
+        i += +1
+    else:
+        i = 0
+        
+
+    
 #add enemy
     screen.blit(enemy.caption, (enemy.coord_x, enemy.coord_y))
     screen.blit(enemy_2.caption, (enemy_2.coord_x, enemy_2.coord_y))
 #add task
     screen.blit(task.caption, (task.coord_x, task.coord_y))
+
+    pg.display.update()
     
-#button on
+        #button on
     for event in pg.event.get():
         if event.type == pg.QUIT:
             pg.quit()
-    if h_c <= 0:
-        pass
 
 #key description
     keys = pg.key.get_pressed()
@@ -116,18 +157,19 @@ while running:
         if keys[pg.K_UP]:
             is_jump = True
     else:
-        if jump_size >= -10:
+        if jump_size >= -7:
             if jump_size > 0:
-                player_y -= jump_size ** 2 / 2
+                player_y -= (jump_size ** 2) / 2
+                player_x += 5
             else:
                 player_y += jump_size ** 2 / 2
-            jump_size -= 2
+            jump_size -= 1
         else:
             is_jump = False
-            jump_size = 10
+            jump_size = 7
 
     #Повторяем фон
-    bg_x = move_2(bg_x, 1, 741)    
+    #bg_x = move_2(bg_x, 1, 741)    
     #двигаем первого врага
     enemy.coord_x = move_2(enemy.coord_x, 3, 741, weight + 2)
     #двигаем второго врага
@@ -135,11 +177,23 @@ while running:
     #двигаем таску 
     task.coord_x = move_2(task.coord_x, 5, 741, weight + 10)
 
-    pg.display.update()
+    
     #играемся с жизнями
-    h_c = point('enemy', h_c,player_x,player_y,enemy.coord_x,2)
-    h_c = point('enemy', h_c,player_x,player_y,enemy_2.coord_x,2)
-    t_c = point('task', t_c,player_x,player_y,task.coord_x,1)
+    #h_c = point('enemy', h_c,player_x,player_y,enemy.coord_x,2)
+    #h_c = point('enemy', h_c,player_x,player_y,enemy_2.coord_x,2)
+    #t_c = point('task', t_c,player_x,player_y,task.coord_x,1)
+    if player_rect.colliderect(enemy_rect):
+        h_c -= 1
+        enemy.coord_x = -30
+    elif player_rect.colliderect(enemy_2_rect):
+        h_c -= 1
+        enemy_2.coord_x = -30
+    elif player_rect.colliderect(task_rect):
+        t_c += 1
+        task.coord_x = -30
 
-    clock.tick(60)
+    clock.tick(50)
+
+    
+
                 
